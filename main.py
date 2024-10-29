@@ -11,13 +11,7 @@ import cju # from https://github.com/roy6307/cju-oc
 mainWindow = Tk()
 mainWindow.geometry("640x360")
 
-env = {
 
-        "login": False,
-        "status": "Please login",
-        "pbar": 0, # 0 - 100
-
-    }
 
 """
     widgetPool["E_id"] = E_id
@@ -25,11 +19,16 @@ env = {
     widgetPool["T_Tree"] = T_Tree
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
+    widgetPool["B_login"] = B_login
 """
 widgetPool = {}
 
 
 def loginEvent(event, id="", pw=""):
+
+    if widgetPool["B_login"]["state"] == "disabled":
+
+        return
     
     res = cju.init(id, pw)
 
@@ -43,10 +42,11 @@ def loginEvent(event, id="", pw=""):
 
     elif res == 0:
 
-        env["status"] = "Successfully logged in"
-        env["pbar"] = 100
+        widgetPool["B_login"]["state"] = "disabled"
+        widgetPool["E_id"]["state"] = "disabled"
+        widgetPool["E_pw"]["state"] = "disabled"
 
-        widgetPool["L_Status"].config(text=env["status"])
+        widgetPool["L_Status"].config(text="Successfully logged in")
         widgetPool["P_rate"].set(100)
 
         l = cju.getClasses()
@@ -140,6 +140,7 @@ def mainflow():
     widgetPool["T_Tree"] = T_Tree
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
+    widgetPool["B_login"] = B_login
 
     mainWindow.mainloop()
 
