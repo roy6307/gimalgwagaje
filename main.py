@@ -8,6 +8,8 @@ from tkinter import ttk
 import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
 
+mainWindow = Tk()
+mainWindow.geometry("640x360")
 
 env = {
 
@@ -47,11 +49,14 @@ def loginEvent(event, id="", pw=""):
         widgetPool["L_Status"].config(text=env["status"])
         widgetPool["P_rate"].set(100)
 
+        l = cju.getClasses()
+
+        for i in range(len(l)):
+
+            widgetPool["T_Tree"].insert('', 'end', text=i, value=(str(i), l[i][0], ""), iid=str(i))
+
 
 def mainflow():
-
-    mainWindow = Tk()
-    mainWindow.geometry("640x360")
 
     Login_Frame = Frame(mainWindow, relief="solid")
     List_Frame = Frame(mainWindow, relief="solid")
@@ -88,15 +93,18 @@ def mainflow():
 
     L_Class = Label(List_Frame, text="목록")
 
-    T_Tree = ttk.Treeview(List_SubFrame, columns=["name", "selected"], displaycolumns=["name", "selected"])
+    T_Tree = ttk.Treeview(List_SubFrame, columns=["idx", "name", "selected"], displaycolumns=["idx", "name", "selected"])
+
+    T_Tree.column("idx", width=50, anchor="center")
+    T_Tree.heading("idx", text="번호", anchor="center")
     
-    T_Tree.column("name", width=100, anchor="center")
+    T_Tree.column("name", width=200, anchor="center")
     T_Tree.heading("name", text="강의", anchor="center")
 
     T_Tree.column("selected", width=50, anchor="center")
     T_Tree.heading("selected", text="선택됨", anchor="center")
 
-    
+
 
     T_Tree["show"] = "headings"
 
