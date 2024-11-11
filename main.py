@@ -5,10 +5,11 @@
 
 from tkinter import *
 from tkinter import ttk
+from ttkthemes import ThemedTk
 import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
 
-mainWindow = Tk()
+mainWindow = ThemedTk(theme='winnative')
 mainWindow.geometry("640x360")
 
 
@@ -23,6 +24,14 @@ mainWindow.geometry("640x360")
 """
 widgetPool = {}
 
+
+
+def treeSelection(event):
+
+    item = widgetPool["T_Tree"].focus()
+    print((item))
+    
+    v1 = widgetPool["T_Tree"].item(item)
 
 def loginEvent(event, id="", pw=""):
 
@@ -104,12 +113,15 @@ def mainflow():
     T_Tree.column("selected", width=50, anchor="center")
     T_Tree.heading("selected", text="선택됨", anchor="center")
 
-
-
     T_Tree["show"] = "headings"
 
+    L_Tip = Label(List_Frame, text="사이버 강의만 선택해주세요")
+
+    T_Tree.bind("<ButtonRelease-1>", treeSelection)
+
     T_Tree.pack()
-    L_Class.pack(side="top")
+    L_Class.pack(side="top", ipady="3")
+    L_Tip.pack(side="bottom", ipady="7")
 
     # ------------------------------------------------------------------------------------
 
