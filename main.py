@@ -8,6 +8,9 @@ from tkinter import ttk
 from ttkthemes import ThemedTk
 import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
+import sqlite3
+
+
 
 mainWindow = ThemedTk(theme='winnative')
 mainWindow.geometry("640x360")
@@ -66,6 +69,8 @@ def loginEvent(event, id="", pw=""):
 
 
 def mainflow():
+
+    
 
     Login_Frame = Frame(mainWindow, relief="solid")
     List_Frame = Frame(mainWindow, relief="solid")
