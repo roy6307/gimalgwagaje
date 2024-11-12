@@ -32,9 +32,21 @@ widgetPool = {}
 def treeSelection(event):
 
     item = widgetPool["T_Tree"].focus()
-    print((item))
+    print(widgetPool["T_Tree"].item(item, option="values"))
     
-    v1 = widgetPool["T_Tree"].item(item)
+    v1 = widgetPool["T_Tree"].item(item, option="values")
+
+    if item != "":
+
+        if v1[-1] != "Y":
+
+            v2 = (v1[0], v1[1], "Y")
+            widgetPool["T_Tree"].item(item, option=None, values=v2)
+
+        else:
+
+            v2 = (v1[0], v1[1], "")
+            widgetPool["T_Tree"].item(item, option=None, values=v2)
 
 def loginEvent(event, id="", pw=""):
 
