@@ -9,13 +9,12 @@ from ttkthemes import ThemedTk
 import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
 import sqlite3
+import math
 
 
 
 mainWindow = ThemedTk(theme='winnative')
 mainWindow.geometry("640x360")
-
-
 
 """
     widgetPool["E_id"] = E_id
@@ -24,10 +23,36 @@ mainWindow.geometry("640x360")
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
+    widgetPool["P_bar"] = P_bar
 """
 widgetPool = {}
 
+classList = []
 
+
+def runrunrun(event):
+    
+    print(widgetPool["T_Tree"].get_children())
+    
+    for i in widgetPool["T_Tree"].get_children():
+        
+        j = widgetPool["T_Tree"].item(i, option="values")
+
+        if j[2] == "O":
+            
+            target = classList[int(i)]
+            details = cju.setSpecificClassDetail(target[1])
+            
+            for i in details:
+                
+                cju.run(i, updateProgress)
+        
+        
+
+def updateProgress(end, current, txt):
+    
+    widgetPool["L_Status"].config(text=txt)
+    widgetPool["P_rate"].set(math.floor(current/end)*100)
 
 def treeSelection(event):
 
@@ -37,10 +62,10 @@ def treeSelection(event):
     v1 = widgetPool["T_Tree"].item(item, option="values")
 
     if item != "":
+                
+        if v1[-1] != "O":
 
-        if v1[-1] != "Y":
-
-            v2 = (v1[0], v1[1], "Y")
+            v2 = (v1[0], v1[1], "O")
             widgetPool["T_Tree"].item(item, option=None, values=v2)
 
         else:
@@ -76,7 +101,8 @@ def loginEvent(event, id="", pw=""):
         l = cju.getClasses()
 
         for i in range(len(l)):
-
+            
+            classList.append(l[i])
             widgetPool["T_Tree"].insert('', 'end', text=i, value=(str(i), l[i][0], ""), iid=str(i))
 
 
@@ -117,7 +143,7 @@ def mainflow():
     # List Frame (Class List), and sub frame
     # ------------------------------------------------------------------------------------
 
-    L_Class = Label(List_Frame, text="목록")
+    #L_Class = Label(List_Frame, text="목록")
 
     T_Tree = ttk.Treeview(List_SubFrame, columns=["idx", "name", "selected"], displaycolumns=["idx", "name", "selected"])
 
@@ -135,10 +161,15 @@ def mainflow():
     L_Tip = Label(List_Frame, text="사이버 강의만 선택해주세요")
 
     T_Tree.bind("<ButtonRelease-1>", treeSelection)
+    
+    B_run = Button(List_Frame, text="실행!")
+    
+    B_run.bind("<Button-1>", runrunrun)
 
     T_Tree.pack()
-    L_Class.pack(side="top", ipady="3")
-    L_Tip.pack(side="bottom", ipady="7")
+    #L_Class.pack(side="top", ipady="3")
+    L_Tip.pack(side="top", ipady="3")
+    B_run.pack(side="bottom", ipady=7)
 
     # ------------------------------------------------------------------------------------
 
@@ -170,6 +201,7 @@ def mainflow():
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
+    widgetPool["P_bar"] = P_bar
 
     mainWindow.mainloop()
 
