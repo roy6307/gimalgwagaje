@@ -15,6 +15,7 @@ import math
 
 mainWindow = ThemedTk(theme='winnative')
 mainWindow.geometry("640x360")
+mainWindow.title("CJU helper")
 
 """
     widgetPool["E_id"] = E_id
@@ -29,8 +30,7 @@ widgetPool = {}
 
 classList = []
 
-
-def runrunrun(event):
+def runrunrun(reset=False):
     
     print(widgetPool["T_Tree"].get_children())
     
@@ -39,17 +39,29 @@ def runrunrun(event):
         j = widgetPool["T_Tree"].item(i, option="values")
 
         if j[2] == "O":
+
+            #widgetPool["L_Status"].config(text="HIT!")
             
             target = classList[int(i)]
-            details = cju.setSpecificClassDetail(target[1])
             
+            if reset:
+                details = cju.setSpecificClassDetail(target[1], option=True)
+            else:
+                details = cju.setSpecificClassDetail(target[1])
+
             for i in details:
                 
-                cju.run(i, updateProgress)
+                #print(i)
+                
+                if reset:
+                    cju.reset(i, updateProgress)
+                    
+                else:
+                    cju.run(i, updateProgress)
         
         
 
-def updateProgress(end, current, txt):
+def updateProgress(current, end, txt):
     
     widgetPool["L_Status"].config(text=txt)
     widgetPool["P_rate"].set(math.floor(current/end)*100)
@@ -162,14 +174,18 @@ def mainflow():
 
     T_Tree.bind("<ButtonRelease-1>", treeSelection)
     
-    B_run = Button(List_Frame, text="실행!")
+    B_run = Button(List_Frame, text="실행!", command=runrunrun)
     
-    B_run.bind("<Button-1>", runrunrun)
+    #B_run.bind("<Button-1>", runrunrun)
+    
+    B_reset = Button(List_Frame, text="RESET", command=lambda: runrunrun(reset=True))
+    
+    #B_reset.bind("<Button-1>", command=lambda: runrunrun(reset=True))
 
     T_Tree.pack()
-    #L_Class.pack(side="top", ipady="3")
     L_Tip.pack(side="top", ipady="3")
     B_run.pack(side="bottom", ipady=7)
+    B_reset.pack(side="bottom", ipady="7")
 
     # ------------------------------------------------------------------------------------
 
@@ -188,6 +204,17 @@ def mainflow():
     P_bar.pack()
 
     # ------------------------------------------------------------------------------------
+
+
+
+    # Menu frame
+    # ------------------------------------------------------------------------------------
+
+    M_Frame = Menu(mainWindow)
+
+    # ------------------------------------------------------------------------------------
+
+
 
     Status_Frame.pack(side="bottom", pady=10)
     Login_Frame.pack(side="left")
