@@ -25,12 +25,26 @@ mainWindow.title("CJU helper")
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
     widgetPool["P_bar"] = P_bar
+    widgetPool["Login_Frame"] = Login_Frame
+    widgetPool["List_Frame"] = List_Frame
+    widgetPool["List_SubFrame"] = List_SubFrame
+    widgetPool["Status_Frame"] = Status_Frame
+    widgetPool["Detail_Frame"] = Detail_Frame
+
 """
 widgetPool = {}
 
 classList = []
 
 def runrunrun(reset=False):
+
+    widgetPool["List_Frame"].pack_forget()
+    widgetPool["Login_Frame"].pack_forget()
+    widgetPool["List_SubFrame"].pack_forget()
+    widgetPool["Status_Frame"].pack_forget()
+    widgetPool["Detail_Frame"].pack()
+
+    return
     
     print(widgetPool["T_Tree"].get_children())
     
@@ -64,7 +78,7 @@ def runrunrun(reset=False):
 def updateProgress(current, end, txt):
     
     widgetPool["L_Status"].config(text=txt)
-    widgetPool["P_rate"].set(math.floor(current/end)*100)
+    widgetPool["P_rate"].set((current/end)*100)
 
 def treeSelection(event):
 
@@ -126,6 +140,7 @@ def mainflow():
     List_Frame = Frame(mainWindow, relief="solid")
     List_SubFrame = Frame(List_Frame, relief="solid", bg="grey")
     Status_Frame = Frame(mainWindow, relief="solid")
+    Detail_Frame = Frame(mainWindow, relief="solid")
 
     # Login Frame
     # ------------------------------------------------------------------------------------
@@ -174,18 +189,18 @@ def mainflow():
 
     T_Tree.bind("<ButtonRelease-1>", treeSelection)
     
-    B_run = Button(List_Frame, text="실행!", command=runrunrun)
+    B_run = Button(List_Frame, text="run", command=runrunrun)
     
     #B_run.bind("<Button-1>", runrunrun)
     
-    B_reset = Button(List_Frame, text="RESET", command=lambda: runrunrun(reset=True))
+    #B_reset = Button(List_Frame, text="RESET", command=lambda: runrunrun(reset=True))
     
     #B_reset.bind("<Button-1>", command=lambda: runrunrun(reset=True))
 
     T_Tree.pack()
     L_Tip.pack(side="top", ipady="3")
     B_run.pack(side="bottom", ipady=7)
-    B_reset.pack(side="bottom", ipady="7")
+    #B_reset.pack(side="bottom", ipady="7")
 
     # ------------------------------------------------------------------------------------
 
@@ -210,7 +225,31 @@ def mainflow():
     # Menu frame
     # ------------------------------------------------------------------------------------
 
-    M_Frame = Menu(mainWindow)
+    #M_Frame = Menu(mainWindow)
+
+    # ------------------------------------------------------------------------------------
+
+
+
+    # Detail Frame
+    # ------------------------------------------------------------------------------------
+
+    T_Detail = ttk.Treeview(Detail_Frame, columns=["idx", "date", "selected"], displaycolumns=["idx", "date", "selected"])
+
+    T_Detail.column("idx", width=50, anchor="center")
+    T_Detail.heading("idx", text="번호", anchor="center")
+    
+    T_Detail.column("date", width=200, anchor="center")
+    T_Detail.heading("date", text="주차", anchor="center")
+
+    T_Detail.column("selected", width=50, anchor="center")
+    T_Detail.heading("selected", text="선택됨", anchor="center")
+
+    T_Detail["show"] = "headings"
+
+    T_Detail.bind("<ButtonRelease-1>", treeSelection)
+
+    T_Detail.pack()
 
     # ------------------------------------------------------------------------------------
 
@@ -229,6 +268,11 @@ def mainflow():
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
     widgetPool["P_bar"] = P_bar
+    widgetPool["Login_Frame"] = Login_Frame
+    widgetPool["List_Frame"] = List_Frame
+    widgetPool["List_SubFrame"] = List_SubFrame
+    widgetPool["Status_Frame"] = Status_Frame
+    widgetPool["Detail_Frame"] = Detail_Frame
 
     mainWindow.mainloop()
 
