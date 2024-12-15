@@ -9,7 +9,7 @@ from ttkthemes import ThemedTk
 import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
 import sqlite3
-import math
+from concurrent.futures import ThreadPoolExecutor
 
 
 
@@ -36,15 +36,37 @@ widgetPool = {}
 
 classList = []
 
-def runrunrun(reset=False):
+executor = ThreadPoolExecutor(max_workers=1)
+
+def summarization():
+
+    # F I N A L 
+
+    updateProgress(0, 1, "Downloading files")
+    
+    print(widgetPool["T_Detail"].get_children())
+    
+    for i in widgetPool["T_Detail"].get_children():
+        
+        j = widgetPool["T_Detail"].item(i, option="values")
+
+        if j[2] == "O":
+            
+            executor.submit(cju.dlStream, j[0], updateProgress)
+            #cju.dlStream(j[0], updateProgress)
+            print("ZXCV")
+    print("ASDF")
+
+
+def queryClassDetail():
 
     widgetPool["List_Frame"].pack_forget()
     widgetPool["Login_Frame"].pack_forget()
     widgetPool["List_SubFrame"].pack_forget()
-    widgetPool["Status_Frame"].pack_forget()
+    #widgetPool["Status_Frame"].pack_forget()
     widgetPool["Detail_Frame"].pack()
 
-    return
+    updateProgress(0, 1, "Querying...")
     
     print(widgetPool["T_Tree"].get_children())
     
@@ -57,63 +79,64 @@ def runrunrun(reset=False):
             #widgetPool["L_Status"].config(text="HIT!")
             
             target = classList[int(i)]
-            
-            if reset:
-                details = cju.setSpecificClassDetail(target[1], option=True)
-            else:
-                details = cju.setSpecificClassDetail(target[1])
+
+            details = cju.setSpecificClassDetail(target[1])
+
+            updateProgress(1, 1, "Querying...")
 
             for i in details:
                 
-                #print(i)
-                
-                if reset:
-                    cju.reset(i, updateProgress)
-                    
-                else:
-                    cju.run(i, updateProgress)
+                widgetPool["T_Detail"].insert('', 'end', text=i[1], value=(i[1], i[0], ""), iid=i[1])
         
         
 
-def updateProgress(current, end, txt):
+def updateProgress(current: int, end: int, txt: str):
     
     widgetPool["L_Status"].config(text=txt)
     widgetPool["P_rate"].set((current/end)*100)
 
-def treeSelection(event):
 
-    item = widgetPool["T_Tree"].focus()
-    print(widgetPool["T_Tree"].item(item, option="values"))
+
+def treeSelection(event, F: str):
+
+    item = widgetPool[F].focus()
+    print(widgetPool[F].item(item, option="values"))
     
-    v1 = widgetPool["T_Tree"].item(item, option="values")
+    v1 = widgetPool[F].item(item, option="values")
 
     if item != "":
                 
         if v1[-1] != "O":
 
             v2 = (v1[0], v1[1], "O")
-            widgetPool["T_Tree"].item(item, option=None, values=v2)
+            widgetPool[F].item(item, option=None, values=v2)
 
         else:
 
             v2 = (v1[0], v1[1], "")
-            widgetPool["T_Tree"].item(item, option=None, values=v2)
+            widgetPool[F].item(item, option=None, values=v2)
 
-def loginEvent(event, id="", pw=""):
+
+
+def loginEvent(event, id: str = "", pw: str = ""):
 
     if widgetPool["B_login"]["state"] == "disabled":
 
         return
+    
+    updateProgress(0, 1, "Loggin in...")
     
     res = cju.init(id, pw)
 
     if res == -1:
 
         msgbox.showerror("Error", "id/pw가 비어있습니다.")
+        updateProgress(0, 1, "Empty id/pw")
 
     elif res == -2:
 
         msgbox.showerror("Error", "로그인에 실패하였습니다.")
+        updateProgress(0, 1, "Login failure")
 
     elif res == 0:
 
@@ -130,6 +153,7 @@ def loginEvent(event, id="", pw=""):
             
             classList.append(l[i])
             widgetPool["T_Tree"].insert('', 'end', text=i, value=(str(i), l[i][0], ""), iid=str(i))
+
 
 
 def mainflow():
@@ -185,22 +209,15 @@ def mainflow():
 
     T_Tree["show"] = "headings"
 
-    L_Tip = Label(List_Frame, text="사이버 강의만 선택해주세요")
+    L_Tip1 = Label(List_Frame, text="사이버 강의 하나만 선택해주세요")
 
-    T_Tree.bind("<ButtonRelease-1>", treeSelection)
+    T_Tree.bind("<ButtonRelease-1>", lambda e: treeSelection(e, "T_Tree"))
     
-    B_run = Button(List_Frame, text="run", command=runrunrun)
-    
-    #B_run.bind("<Button-1>", runrunrun)
-    
-    #B_reset = Button(List_Frame, text="RESET", command=lambda: runrunrun(reset=True))
-    
-    #B_reset.bind("<Button-1>", command=lambda: runrunrun(reset=True))
+    B_run = Button(List_Frame, text="정보 가져오기", command=queryClassDetail)
 
     T_Tree.pack()
-    L_Tip.pack(side="top", ipady="3")
-    B_run.pack(side="bottom", ipady=7)
-    #B_reset.pack(side="bottom", ipady="7")
+    L_Tip1.pack(side="top", ipady="3")
+    B_run.pack(side="bottom", ipady="7")
 
     # ------------------------------------------------------------------------------------
 
@@ -222,33 +239,32 @@ def mainflow():
 
 
 
-    # Menu frame
-    # ------------------------------------------------------------------------------------
-
-    #M_Frame = Menu(mainWindow)
-
-    # ------------------------------------------------------------------------------------
-
-
-
     # Detail Frame
     # ------------------------------------------------------------------------------------
 
-    T_Detail = ttk.Treeview(Detail_Frame, columns=["idx", "date", "selected"], displaycolumns=["idx", "date", "selected"])
+    T_Detail = ttk.Treeview(Detail_Frame, columns=["id", "title", "selected"], displaycolumns=["id", "title", "selected"])
 
-    T_Detail.column("idx", width=50, anchor="center")
-    T_Detail.heading("idx", text="번호", anchor="center")
+    T_Detail.column("#0", width=0, stretch=NO)
+
+    T_Detail.column("id", width=50, anchor="center")
+    T_Detail.heading("id", text="id", anchor="center")
     
-    T_Detail.column("date", width=200, anchor="center")
-    T_Detail.heading("date", text="주차", anchor="center")
+    T_Detail.column("title", width=400, anchor="center")
+    T_Detail.heading("title", text="제목", anchor="center")
 
     T_Detail.column("selected", width=50, anchor="center")
     T_Detail.heading("selected", text="선택됨", anchor="center")
 
     T_Detail["show"] = "headings"
 
-    T_Detail.bind("<ButtonRelease-1>", treeSelection)
+    T_Detail.bind("<ButtonRelease-1>", lambda e: treeSelection(e, "T_Detail"))
 
+    L_Tip2 = Label(Detail_Frame, text="요약할 강의를 선택해주세요")
+
+    B_Sum = Button(Detail_Frame, text="요약하기", command=summarization)
+
+    L_Tip2.pack(side="top", ipady="3")
+    B_Sum.pack(side="bottom", ipady="7")
     T_Detail.pack()
 
     # ------------------------------------------------------------------------------------
@@ -264,6 +280,7 @@ def mainflow():
     widgetPool["E_id"] = E_id
     widgetPool["E_pw"] = E_pw
     widgetPool["T_Tree"] = T_Tree
+    widgetPool["T_Detail"] = T_Detail
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
