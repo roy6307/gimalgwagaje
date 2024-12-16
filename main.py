@@ -10,6 +10,7 @@ import tkinter.messagebox as msgbox
 import cju # from https://github.com/roy6307/cju-oc
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+import os
 
 
 
@@ -38,9 +39,66 @@ classList = []
 
 executor = ThreadPoolExecutor(max_workers=1)
 
+treeSelect = True
+
+tasks = []
+
+
+
+def merge():
+
+    executor.shutdown()
+    #os.remove("ts/chunklist.m3u8")
+
+    updateProgress(1, 1, "Download completed...!")
+
+    fn = next(os.walk("./ts"), (None, None, []))[2]
+
+    mv = open("ts/vd.ts", "ab")
+
+    for i in range(len(fn)):
+
+        f = open(f"ts/media_{i}.ts", "rb")
+        t = f.read()
+        q = len(t)
+        
+        updateProgress(i + 1, len(fn), f"Merging media_{i}.ts into vd.ts ({q})")
+
+        mv.write(t)
+
+        f.close()
+
+        os.remove(f"ts/media_{i}.ts")
+
+    mv.close()
+    
+
+
+def check_tasks():
+
+    global tasks
+
+    done_count = sum(1 for t in tasks if t.done())
+    
+    if done_count == len(tasks):
+        
+        merge()
+
+    else:
+
+        mainWindow.after(100, check_tasks)
+
+
+
 def summarization():
 
     # F I N A L 
+
+    global treeSelect
+    global tasks
+
+    widgetPool["B_Sum"]["state"] = "disabled"
+    treeSelect = False
 
     updateProgress(0, 1, "Downloading files")
     
@@ -52,10 +110,10 @@ def summarization():
 
         if j[2] == "O":
             
-            executor.submit(cju.dlStream, j[0], updateProgress)
-            #cju.dlStream(j[0], updateProgress)
-            print("ZXCV")
-    print("ASDF")
+            tasks.append(executor.submit(cju.dlStream, j[0], updateProgress))
+
+    check_tasks()
+
 
 
 def queryClassDetail():
@@ -63,7 +121,6 @@ def queryClassDetail():
     widgetPool["List_Frame"].pack_forget()
     widgetPool["Login_Frame"].pack_forget()
     widgetPool["List_SubFrame"].pack_forget()
-    #widgetPool["Status_Frame"].pack_forget()
     widgetPool["Detail_Frame"].pack()
 
     updateProgress(0, 1, "Querying...")
@@ -82,7 +139,7 @@ def queryClassDetail():
 
             details = cju.setSpecificClassDetail(target[1])
 
-            updateProgress(1, 1, "Querying...")
+            updateProgress(1, 1, "Done...!")
 
             for i in details:
                 
@@ -98,6 +155,10 @@ def updateProgress(current: int, end: int, txt: str):
 
 
 def treeSelection(event, F: str):
+
+    if F == "T_Detail" and treeSelect == False:
+
+        return
 
     item = widgetPool[F].focus()
     print(widgetPool[F].item(item, option="values"))
@@ -284,6 +345,7 @@ def mainflow():
     widgetPool["L_Status"] = L_Status
     widgetPool["P_rate"] = P_rate
     widgetPool["B_login"] = B_login
+    widgetPool["B_Sum"] = B_Sum
     widgetPool["P_bar"] = P_bar
     widgetPool["Login_Frame"] = Login_Frame
     widgetPool["List_Frame"] = List_Frame
